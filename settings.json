@@ -1,0 +1,31 @@
+{
+    "Repository": {
+      "SourceRepository": "https://github.com/username/source-repo.git",
+      "TargetRepository": "https://github.com/username/target-repo.git",
+      "CloneDirectory": "target-repo"
+    },
+    "FileMappings": [
+      {
+        "TargetPath": "folder1/file.txt",
+        "ContentFile": "FileContents/file1.txt"
+      },
+      {
+        "TargetPath": "folder2/file.txt",
+        "ContentFile": "FileContents/file2.txt"
+      }
+    ],
+    "Network": {
+      "CidrRanges": [
+        "192.168.1.0/24",
+        "10.0.0.0/30"
+      ],
+      "PingTimeoutMs": 1000
+    },
+    "PullRequest": {
+      "Title": "Add new configuration files",
+      "BaseBranch": "main",
+      "BranchName": "feature/add-files",
+      "Body": "Automated PR adding new configuration files",
+      "Labels": ["automation", "configuration"]
+    }
+  }
