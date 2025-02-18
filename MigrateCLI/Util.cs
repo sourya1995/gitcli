@@ -1,4 +1,6 @@
 using System.Text.Json;
+using System.Net;
+using System.Net.Sockets;
 
 static async Task CreateFilesAndRaisePRAsync()
 {
@@ -134,4 +136,36 @@ static async Task RunProcessAsync(string fileName, string arguments, string work
     }
 
     Console.WriteLine(output.ToString());
+}
+
+static IEnumerable<IPAddress> GetIPAddressesFromCidr(string cidr)
+{
+    var parts = cidr.Split('/');
+    if (parts.Length != 2)
+        throw new ArgumentException("Invalid CIDR format");
+
+    var baseAddress = IPAddress.Parse(parts[0]);
+    var prefixLength = int.Parse(parts[1]);
+
+    var baseAddressBytes = baseAddress.GetAddressBytes();
+    if (BitConverter.IsLittleEndian)
+        Array.Reverse(baseAddressBytes); // Ensure big-endian for calculations
+
+    uint baseAddressInt = BitConverter.ToUInt32(baseAddressBytes, 0);
+    int hostBits = 32 - prefixLength;
+    uint mask = uint.MaxValue << hostBits;
+    uint networkAddress = baseAddressInt & mask;
+    uint broadcastAddress = networkAddress | ~mask;
+
+    var addresses = new List<IPAddress>();
+    for (uint addr = networkAddress + 1; addr < broadcastAddress; addr++) // Exclude network & broadcast addresses
+    {
+        var addressBytes = BitConverter.GetBytes(addr);
+        if (BitConverter.IsLittleEndian)
+            Array.Reverse(addressBytes);
+
+        addresses.Add(new IPAddress(addressBytes));
+    }
+
+    return addresses;
 }
