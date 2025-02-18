@@ -100,3 +100,38 @@ static async Task PingAsync(IPAddress ip, int timeout)
         Console.WriteLine($"{ip}: Error");
     }
 }
+
+static async Task RunProcessAsync(string fileName, string arguments, string workingDirectory)
+{
+    var processStartInfo = new ProcessStartInfo
+    {
+        FileName = fileName,
+        Arguments = arguments,
+        RedirectStandardOutput = true,
+        RedirectStandardError = true,
+        UseShellExecute = false,
+        CreateNoWindow = true,
+        WorkingDirectory = workingDirectory
+    };
+
+    using var process = new Process { StartInfo = processStartInfo };
+    
+    var output = new StringBuilder();
+    var error = new StringBuilder();
+
+    process.OutputDataReceived += (sender, e) => { if (e.Data != null) output.AppendLine(e.Data); };
+    process.ErrorDataReceived += (sender, e) => { if (e.Data != null) error.AppendLine(e.Data); };
+
+    process.Start();
+    process.BeginOutputReadLine();
+    process.BeginErrorReadLine();
+
+    await process.WaitForExitAsync();
+
+    if (process.ExitCode != 0)
+    {
+        throw new Exception($"Command failed with exit code {process.ExitCode}: {error}");
+    }
+
+    Console.WriteLine(output.ToString());
+}
